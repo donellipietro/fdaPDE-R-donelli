@@ -23,7 +23,7 @@
 
 #include <fdaPDE/utils.h>
 #include <fdaPDE/finite_elements.h>
-#include <fdaPDE/mesh.h>
+#include <fdaPDE/geometry.h>
 #include "r_mesh.h"
 using fdapde::core::Mesh;
 using fdapde::core::Integrator;
@@ -81,7 +81,7 @@ template <int M, int N, int R> class R_FunctionalSpace {
 	std::size_t size = (R == 1 ? domain_.n_nodes() : domain_.n_nodes() + domain_.n_edges());
 	switch(space_type_) {
 	case space_type::fem_lagrange: {
-	  fun_space_ = LagrangianBasis<DomainType, R>(domain_, size);
+	  fun_space_ = LagrangianBasis<DomainType, R>(domain_);
 	} break;
         }
     }

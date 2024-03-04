@@ -1,3 +1,4 @@
+
 // This file is part of fdaPDE, a C++ library for physics-informed
 // spatial and functional data analysis.
 //
@@ -16,19 +17,20 @@
 
 #include <RcppEigen.h>
 // [[Rcpp::depends(RcppEigen)]]
-#include "headers/r_srpde.h"
+#include "headers/r_center.h"
 
 // Rcpp modules definition
-using cpp_srpde = R_SRPDE;
-RCPP_MODULE(cpp_srpde) {
-    Rcpp::class_<R_SRPDE>("cpp_srpde")
-      .constructor<Rcpp::Environment, int>()
-      .method("f"               , &R_SRPDE::f               )
-      .method("fitted"          , &R_SRPDE::fitted          )
-      .method("get_gcv"         , &R_SRPDE::get_gcv         )
-      .method("set_lambda_D"    , &R_SRPDE::set_lambda_D    )
-      .method("set_observations", &R_SRPDE::set_observations)
-      .method("set_covariates"  , &R_SRPDE::set_covariates  )
-      .method("init"            , &R_SRPDE::init            )
-      .method("solve"           , &R_SRPDE::solve           );
+
+using cpp_center = R_CENTER;
+RCPP_MODULE(cpp_center) { 
+    Rcpp::class_<R_CENTER>("cpp_center")
+      .constructor() 
+      .method("centered",        &R_CENTER::centered        ) 
+      .method("mean",            &R_CENTER::mean            ) 
+      .method("set_data",        &R_CENTER::set_data        )
+      .method("set_weights",     &R_CENTER::set_weights     )
+      .method("set_smoother",    &R_CENTER::set_smoother    )
+      .method("set_calibrator",  &R_CENTER::set_calibrator  )
+      .method("init",            &R_CENTER::init            )
+      .method("solve",           &R_CENTER::solve           );
 }
