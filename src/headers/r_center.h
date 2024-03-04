@@ -27,10 +27,12 @@
 
 // models
 #include <fdaPDE/models.h>
+#include "r_regression_model.h"
 using fdapde::models::Sampling;
 using fdapde::models::RegressionView;
 
 // calibrators
+#include "r_calibrator.h"
 #include <fdaPDE/calibration/calibration_base.h>
 using fdapde::calibration::Calibrator;
 
@@ -43,17 +45,25 @@ using fdapde::models::CenterReturnType;
 class R_CENTER {
 
 private:
-    RegressionView<void> smoother_view_;
-    Calibrator<RegressionView<void>> calibrator_;
+    // regression model
+    R_REGRESSION_MODEL regression_model_;
+    // data
     DMatrix<double> X_;
     DMatrix<double> w_;
     bool weighted_ = FALSE;
+    // results
     CenterReturnType results_;
 
 public:
 
     // constructor
-    R_CENTER() = default;
+    R_CENTER(int regression_model,
+             const Rcpp::Environment & pde, int sampling_type, const Rcpp::List & smoother_params) : 
+             regression_model_(regression_model, pde, sampling_type, smoother_params) {}
+
+    // getters
+    DMatrix<double> centered() {return results_.fitted; }
+    DMatrix<double> mean() {return results_.mean; }
 
     // setters
     void set_data(const DMatrix<double>& X) { X_ = X; }
@@ -61,27 +71,22 @@ public:
       w_ = w;
       weighted_ = TRUE;
     }
-    void set_smoother(Rcpp::XPtr<RegressionView<void>> smoother_view_ptr){
-      smoother_view_ = *smoother_view_ptr.get();
-    }
-    void set_calibrator(Rcpp::XPtr<Calibrator<RegressionView<void>>> calibrator_ptr){
-      calibrator_ = *calibrator_ptr.get();
+    void set_spatial_locations(const DMatrix<double>& locs) { regression_model_.set_spatial_locations(locs); }
+    void set_calibrator(int calibration_strategy, const Rcpp::List & calibrator_params, const Rcpp::List & R_lambda) {
+      regression_model_.set_calibrator(Calibration(calibration_strategy), calibrator_params, R_lambda);
     }
 
     // utilities
     void init() { return; }
-    void solve() {
-      if(weighted_){
-        results_ = center(X_, w_, smoother_view_, calibrator_);
-      }
-      else {
-        results_ = center(X_, smoother_view_, calibrator_);
-      }
+    void configure_calibrator(const Rcpp::List & R_lambda) {
+      regression_model_.configure_calibrator(R_lambda);
     }
-
-    // getters
-    DMatrix<double> centered() {return results_.fitted; }
-    DMatrix<double> mean() {return results_.mean; }
+    void solve() {
+      if(weighted_)
+        results_ = center(X_, w_, regression_model_.get_model_view(), regression_model_.get_configured_calibrator());
+      else 
+        results_ = center(X_, regression_model_.get_model_view(), regression_model_.get_configured_calibrator());
+    }
 
 };
 

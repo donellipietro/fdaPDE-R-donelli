@@ -52,6 +52,13 @@ SolutionPolicy <- function(x) {
   match.list(solution_policy_options, x)
 }
 
+RegressionModel <- function(x) {
+  regression_model_options <- list(
+    "SRPDE" = 0
+  )
+  match.list(regression_model_options, x)
+}
+
 
 # hyperparameters ----
 
@@ -311,26 +318,6 @@ smoothing <- function(name = c("SRPDE"),
 
 ## functional ----
 
-
-### fCentering ----
-
-## this method has a slightly different behavior because in the library
-## it is not impemented as a method but as a function (that wraps a smoothing method)
-## the goal of this function is to guarantee the consistency of
-## the interfaces on both the user (R) and library (R-cpp) sides
-centering <- function(calibrator = off(),
-                      penalty = simple_laplacian_penalty(),
-                      smoother = smoothing()) {
-  ## overwriting smoother defaults with the required ones
-  ## necessary to guarantee the consistency with the other statistical models
-  ## (each statistical model is responsible of its own calibration and lambda)
-  ## while providing a clean interface to the final user
-  smoother$penalty <- penalty
-  smoother$calibrator <- parse_calibrator(calibrator)
-  center_init_list <- smoother
-  return(center_init_list)
-}
-
 parse_center <- function(center, as.option = FALSE) {
   if (!as.option) {
     if (is.null(center) || is.logical(center)) {
@@ -348,6 +335,25 @@ parse_center <- function(center, as.option = FALSE) {
       return(TRUE)
     }
   }
+}
+
+### fCentering ----
+
+centering <- function(...) {
+  fCentering_init(...)
+}
+fCentering_init <- function(calibrator = gcv(),
+                            penalty = simple_laplacian_penalty(),
+                            smoother = smoothing()) {
+  smoother$calibrator <- parse_calibrator(calibrator)
+  fCentering_init_list <- list(
+    name = "fCentering",
+    ## regularization
+    penalty = penalty,
+    ## analysis
+    smoother = smoother
+  )
+  return(fCentering_init_list)
 }
 
 ### fPCA ----
@@ -419,6 +425,12 @@ functional_model <- function(name = c("fPCA", "fPLS"),
                              solver = sequential(),
                              ...) {
   functional_model_init_list <- switch(match.arg(name),
+    "fCentering" = {
+      fPCA_init(
+        penalty = penalty,
+        ...
+      )
+    },
     "fPCA" = {
       fPCA_init(
         penalty = penalty,

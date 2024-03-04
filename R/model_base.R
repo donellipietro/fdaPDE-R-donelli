@@ -28,7 +28,7 @@ fdaPDE_Base_Model <- R6::R6Class(
   ),
   private = list(
     ## model instance
-    cpp_model = 5,
+    cpp_model = NULL,
     get_cpp_model = function() {
       return(private$cpp_model)
     },
@@ -64,20 +64,20 @@ fdaPDE_Base_Model <- R6::R6Class(
 
 # helping functions
 
-export_calibrator_results <- function(cpp_calibrator) {
+export_calibrator_results <- function(cpp_model) {
   ## list initialization
   calibrator_results <- list()
   ## optimal lambda
-  calibrator_results$lambda_opt <- cpp_calibrator$optimum()
+  calibrator_results$lambda_opt <- cpp_model$optimum()
   ## calibrator specific results
-  if (cpp_calibrator$get_calibration_strategy() == Calibration("gcv")) {
-    calibrator_results$edfs <- as.matrix(cpp_calibrator$edfs())
-    calibrator_results$gcvs <- as.matrix(cpp_calibrator$gcvs())
+  if (cpp_model$get_calibration_strategy() == Calibration("gcv")) {
+    calibrator_results$edfs <- as.matrix(cpp_model$edfs())
+    calibrator_results$gcvs <- as.matrix(cpp_model$gcvs())
   }
-  if (cpp_calibrator$get_calibration_strategy() == Calibration("kcv")) {
-    calibrator_results$avg_scores <- as.matrix(cpp_calibrator$avg_scores())
-    calibrator_results$std_scores <- as.matrix(cpp_calibrator$std_scores())
-    calibrator_results$scores <- as.matrix(cpp_calibrator$scores())
+  if (cpp_model$get_calibration_strategy() == Calibration("kcv")) {
+    calibrator_results$avg_scores <- as.matrix(cpp_model$avg_scores())
+    calibrator_results$std_scores <- as.matrix(cpp_model$std_scores())
+    calibrator_results$scores <- as.matrix(cpp_model$scores())
   }
   return(calibrator_results)
 }

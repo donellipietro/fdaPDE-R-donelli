@@ -19,17 +19,10 @@ Rcpp::loadModule("cpp_lagrange_basis_2d_fe1", TRUE)
 Rcpp::loadModule("cpp_lagrange_basis_2d_fe2", TRUE)
 
 
-## calibration
-Rcpp::loadModule("cpp_off", TRUE)
-Rcpp::loadModule("cpp_gcv", TRUE)
-Rcpp::loadModule("cpp_kcv", TRUE)
-
-
 ## spatial models
 
 ## RegressionModels
-Rcpp::loadModule("cpp_srpde", TRUE)
-
+Rcpp::loadModule("cpp_regression_model", TRUE)
 
 ## functional models
 
@@ -40,5 +33,5 @@ Rcpp::loadModule("cpp_center", TRUE)
 Rcpp::loadModule("cpp_fpca_spaceonly", TRUE)
 Rcpp::loadModule("cpp_fpca_spacetimeseparable", TRUE)
 
-## fPLS
+## fPL
 Rcpp::loadModule("cpp_fpls_spaceonly", TRUE)

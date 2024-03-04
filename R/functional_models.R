@@ -35,8 +35,11 @@ fCentering_class <- R6::R6Class(
       } else if (!is.null(calibrator)) { ## calibrator update if necessary
         super$display("- Setting the new calibrator")
         private$center_model$calibrator <- parse_calibrator(calibrator) ## to keep center updated
-        cpp_calibrator <- calibrators_factory(private$center_model$calibrator)
-        private$init_calibrator(cpp_calibrator, private$center_model$calibrator$lambda)
+        super$cpp_model$set_calibrator(
+          Calibration(private$center_model$calibrator$name),
+          private$center_model$calibrator$parameters,
+          private$center_model$calibrator$lambda
+        )
       }
       # centering by using the loaded smoother and calibrator
       super$display("- Centering")
@@ -51,10 +54,6 @@ fCentering_class <- R6::R6Class(
   private = list(
     ## center_init_list
     center_model = NULL,
-    ## smoother instance
-    cpp_smoother = NULL,
-    ## calibrator instance
-    cpp_calibrator = NULL,
     ## initialize utils
     sanity_check_data = function(data) {
       ## domain informations
@@ -72,9 +71,7 @@ fCentering_class <- R6::R6Class(
     },
     init_centering = function(center_init_list) {
       ## init all the cpp objects
-      cpp_touple <- centering_factory(domain, self$model_traits, center_init_list)
-      ## save cpp_model
-      super$cpp_model <- cpp_touple$cpp_model
+      super$cpp_model <- functional_models_factory(domain, self$model_traits, center_init_list$smoother)
       ## set data into the cpp model
       super$cpp_model$set_data(self$X)
       super$display("  Data have been set.")
@@ -82,41 +79,22 @@ fCentering_class <- R6::R6Class(
         super$cpp_model$set_weights(self$w)
         super$display("  Weights have been set.")
       }
-      ## smoother init
-      super$display("- Initializing the smoother")
-      private$init_smoother(cpp_touple$cpp_smoother)
+      ## set locations into the smoother
+      super$cpp_model$set_spatial_locations(self$locations)
+      super$display("  Locations have been set.")
       ## calibrator init
       super$display("- Initializing the calibrator")
-      private$init_calibrator(cpp_touple$cpp_calibrator, private$center_model$calibrator$lambda)
-    },
-    init_smoother = function(cpp_smoother) {
-      ## save the new smoother
-      private$cpp_smoother <- cpp_smoother
-      ## set locations into the smoother
-      private$cpp_smoother$set_spatial_locations(self$locations)
-      super$display("  Locations have been set.")
-      ## load the smoother into the cpp_model
-      super$cpp_model$set_smoother(private$cpp_smoother$get_view())
-    },
-    init_calibrator = function(cpp_calibrator, lambda) {
-      ## save the new calibrator
-      private$cpp_calibrator <- cpp_calibrator
-      ## configure and load the new calibrator
-      private$load_calibrator(lambda)
-    },
-    load_calibrator = function(lambda) {
-      ## calibrator configuration & load into the cpp_model
-      ## (this MUST be done at the very end because cpp_model wants a
-      ##  configured calibrator, otherwise the type-erasure is not possible)
       super$cpp_model$set_calibrator(
-        private$cpp_calibrator$configure_calibrator(lambda)
+        Calibration(center_init_list$smoother$calibrator$name),
+        center_init_list$smoother$calibrator$parameters,
+        center_init_list$smoother$calibrator$lambda
       )
     }
   )
 )
 
 ## library friendly interface
-fCentering_pro <- function(data, center = centering(), VERBOSE = FALSE) {
+fCentering_pro <- function(data, center = centering, VERBOSE = FALSE) {
   model <- fCentering_class$new(
     data = data,
     center = center,
@@ -132,14 +110,12 @@ fCentering <- function(data,
                        smoother = smoothing(),
                        calibrator = hyperparameters(space = 1e-4),
                        VERBOSE = FALSE) {
-  ## overwriting smoother defaults with the required ones
-  ## necessary to guarantee the consistency with the other statistical models
-  ## while providing a clear interface to the final user
-  smoother$penalty <- penalty
-  smoother$calibrator <- parse_calibrator(calibrator)
-  center <- smoother
-  ## the smoother now is a customized center (with defaulted lambda)
-  return(fCentering_pro(data, center, VERBOSE))
+  center_init_list <- fCentering_init(
+    penalty = penalty,
+    smoother = smoother,
+    calibrator = parse_calibrator(calibrator)
+  )
+  return(fCentering_pro(data, center_init_list, VERBOSE))
 }
 
 ## FunctionalModel models
@@ -383,7 +359,7 @@ fPCA <- function(data,
   fPCA_model <- fPCA_init()
   fPCA_model$penalty <- penalty
   if (is.null(center) || is.logical(center)) {
-    fPCA_model$center <- centering()
+    fPCA_model$center <- centering
   } else {
     fPCA_model$center <- center
   }
@@ -503,7 +479,7 @@ fPLS <- function(data,
   fPLS_model <- fPLS_init()
   fPLS_model$penalty <- penalty
   if (is.null(center) || is.logical(center)) {
-    fPLS_model$center <- centering()
+    fPLS_model$center <- centering
   } else {
     fPLS_model$center <- center
   }

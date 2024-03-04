@@ -54,22 +54,63 @@ using fdapde::models::RegressionView;
 // TODO gcv/kcv: the set_lambda method needs to be generalized to space-time
 */
 
-template<typename CalibratorType>
 class R_CALIBRATOR {
-  protected:
-    CalibratorType calibrator_;
-    Calibrator<RegressionView<void>> configured_calibrator_;
+  private:
+
     Calibration calibration_strategy_;
+    fdapde::calibration::Off calibrator_off_;
+    fdapde::calibration::GCV<void> calibrator_gcv_;
+    fdapde::calibration::KCV calibrator_kcv_;
+    Calibrator<RegressionView<void>> configured_calibrator_;
     std::vector<DVector<double>> lambda_grid_;
+    
   public:
     // constructor
-    R_CALIBRATOR(Calibration calibration_strategy) : calibration_strategy_(calibration_strategy) {};
+    R_CALIBRATOR() : calibration_strategy_(Calibration::off) {};
+    R_CALIBRATOR(Calibration calibration_strategy, const Rcpp::List & calibrator_params) : calibration_strategy_(calibration_strategy) {
+      switch (calibration_strategy_) {
+        case Calibration::off : {
+          break;
+        }
+        case Calibration::gcv : {
+          // grid optimizer (fixed to grid)
+          fdapde::core::Grid<fdapde::Dynamic> opt;
+          // EDF strategy (set to stochastic)
+          StochasticEDF edf;
+          edf.set_seed(Rcpp::as<int>(calibrator_params["seed"]));
+          edf.set_n_mc_samples(Rcpp::as<int>(calibrator_params["mc_samples"]));
+          // calibrator
+          calibrator_gcv_ = fdapde::calibration::GCV {opt, edf};
+          break;
+        }
+        case Calibration::kcv : {
+          // number of folds
+          if (calibrator_params["n_folds"] == R_NilValue){
+            calibrator_kcv_ = fdapde::calibration::KCV {};
+            return;
+          }
+          std::size_t n_folds = calibrator_params["n_folds"];
+          // folds randomization
+          bool shuffle = calibrator_params["shuffle"];
+          if (calibrator_params["seed"] != R_NilValue){
+            calibrator_kcv_ = fdapde::calibration::KCV{n_folds, calibrator_params["seed"], shuffle};
+            return;
+          } else{
+            calibrator_kcv_ = fdapde::calibration::KCV {n_folds, shuffle};
+            return;
+          }
+          break;
+        }
+      }
+    };
+
     // getters
     int get_calibration_strategy() { return calibration_strategy_;}
-    DVector<double> optimum() { return calibrator_.optimum(); }
-    Rcpp::XPtr<Calibrator<RegressionView<void>>> get_configured_calibrator() {
-      return Rcpp::XPtr<Calibrator<RegressionView<void>>>(&configured_calibrator_);
+    DVector<double> optimum() { return configured_calibrator_.optimum(); }
+    Calibrator<RegressionView<void>> & get_configured_calibrator() {
+      return configured_calibrator_;
     }
+
     // utils
     void parse_R_lambda(Rcpp::List R_lambda){
       Rcpp::NumericVector lambda_D_grid = R_lambda["space"];
@@ -80,95 +121,94 @@ class R_CALIBRATOR {
         lambda_grid_[i][0] = lambda_D_grid[i];
       }
     }
-};
+    Calibrator<RegressionView<void>> configure_calibrator(const Rcpp::List & R_lambda){
+      switch (calibration_strategy_) {
+        case Calibration::off : 
+          return configure_calibrator_off(R_lambda);
+        case Calibration::gcv :
+          return configure_calibrator_gcv(R_lambda);
+        case Calibration::kcv :
+          return configure_calibrator_kcv(R_lambda);
+      }
+    }
+    DVector<double> fit(RegressionView<void> & model_view) {
+      switch (calibration_strategy_) {
+        case Calibration::off : 
+          return fit_off(model_view);
+        case Calibration::gcv :
+          return fit_gcv(model_view);
+        case Calibration::kcv :
+          return fit_kcv(model_view);
+      }
+    }
 
-// implementation of calibrator wrapper for Off calibration strategy
-class R_OFF : public R_CALIBRATOR<fdapde::calibration::Off>{        
-    public:
-        // constructor
-        R_OFF() = default;
-        R_OFF(Rcpp::List off_params) : R_CALIBRATOR(Calibration::off) { return; };
-        // setters
-        Rcpp::XPtr<Calibrator<RegressionView<void>>> configure_calibrator(Rcpp::List R_lambda){
-            parse_R_lambda(R_lambda); // it initializes lambda_grid_
-            DVector<double> lambda = lambda_grid_.front();
-            configured_calibrator_ = calibrator_(lambda);
-            return get_configured_calibrator();
-        }
-        // fit
-        DVector<double> fit(Rcpp::XPtr<fdapde::models::RegressionView<void>> model_view_ptr){
-            return calibrator_.fit(*model_view_ptr.get());
-        }
-};
+    // ** calibrator specific methods ** //
 
-// implementation of calibrator wrapper for GCV calibration strategy
-class R_GCV : public R_CALIBRATOR<fdapde::calibration::GCV<void>>{
-    public:
-        // constructor
-        R_GCV(Rcpp::List gcv_params) : R_CALIBRATOR(Calibration::gcv) {
-            // grid optimizer (fixed to grid)
-            fdapde::core::Grid<fdapde::Dynamic> opt;
-            // EDF strategy (set to stochastic)
-            StochasticEDF edf(100, 176813);
-            edf.set_seed(Rcpp::as<int>(gcv_params["seed"]));
-            edf.set_n_mc_samples(Rcpp::as<int>(gcv_params["mc_samples"]));
-            // calibrator
-            calibrator_ = fdapde::calibration::GCV {opt, edf};
-        }
-        // getters
-        std::vector<double> gcvs() const { return calibrator_.gcvs(); }
-        std::vector<double> edfs() const { return calibrator_.edfs(); }
-        // setters
-        Rcpp::XPtr<Calibrator<RegressionView<void>>> configure_calibrator(const Rcpp::List & R_lambda){
-            parse_R_lambda(R_lambda); // it initializes lambda_grid_
-            configured_calibrator_ = Calibrator<RegressionView<void>>(calibrator_(lambda_grid_));
-            return get_configured_calibrator();;
-        }
-        void set_step(double step) { calibrator_.set_step(step); }
-        // fit
-        DVector<double> fit(Rcpp::XPtr<fdapde::models::RegressionView<void>> model_view_ptr){
-            *model_view_ptr.get();
-            (*model_view_ptr.get()).set_lambda(DVector<double>(1));
-            return calibrator_.fit(*model_view_ptr.get(), lambda_grid_);
-        }
-};
+    // gcv getters and setters
+    std::vector<double> gcvs() const { 
+      fdapde_assert(calibration_strategy_ == Calibration::gcv);
+      return calibrator_gcv_.gcvs();
+    }
+    std::vector<double> edfs() const {
+      fdapde_assert(calibration_strategy_ == Calibration::gcv);
+      return calibrator_gcv_.edfs();
+    }
+    void set_step(double step) {
+      fdapde_assert(calibration_strategy_ == Calibration::gcv);
+      calibrator_gcv_.set_step(step);
+    }
 
-// implementation of calibrator wrapper for KCV calibration strategy
-class R_KCV : R_CALIBRATOR<fdapde::calibration::KCV>{
-    public:
-        // constructor
-        R_KCV(Rcpp::List kcv_params) : R_CALIBRATOR(Calibration::kcv) {
-            // number of folds
-            if (kcv_params["n_folds"] == R_NilValue){
-                calibrator_ = fdapde::calibration::KCV {};
-                return;
-            }
-            std::size_t n_folds = kcv_params["n_folds"];
-            // folds randomization
-            bool shuffle = kcv_params["shuffle"];
-            if (kcv_params["seed"] != R_NilValue){
-                calibrator_ = fdapde::calibration::KCV{n_folds, kcv_params["seed"], shuffle};
-                return;
-            } else{
-                calibrator_ = fdapde::calibration::KCV {n_folds, shuffle};
-                return;
-            }
-        }
-        // getters
-        const DVector<double>& avg_scores() const { return calibrator_.avg_scores(); }
-        const DVector<double>& std_scores() const { return calibrator_.std_scores(); }
-        const DMatrix<double>& scores() const { return calibrator_.scores(); }
-        // setters
-        Rcpp::XPtr<Calibrator<RegressionView<void>>> configure_calibrator(const Rcpp::List & R_lambda){
-            parse_R_lambda(R_lambda); // it initializes lambda_grid_
-            configured_calibrator_ = Calibrator<RegressionView<void>>(calibrator_(lambda_grid_, RMSE()));
-            return get_configured_calibrator();;
-        }
-        void set_n_folds(std::size_t n_folds) { calibrator_.set_n_folds(n_folds); }
-        // fit
-        DVector<double> fit(Rcpp::XPtr<fdapde::models::RegressionView<void>> model_view_ptr){
-            return calibrator_.fit(*model_view_ptr.get(), lambda_grid_, RMSE(*model_view_ptr.get()));
-        }
+    // kcv getters and setters
+    const DVector<double>& avg_scores() const {
+      fdapde_assert(calibration_strategy_ == Calibration::kcv);
+      return calibrator_kcv_.avg_scores();
+    }
+    const DVector<double>& std_scores() const {
+      fdapde_assert(calibration_strategy_ == Calibration::kcv);
+      return calibrator_kcv_.std_scores();
+    }
+    const DMatrix<double>& scores() const {
+      fdapde_assert(calibration_strategy_ == Calibration::kcv);
+      return calibrator_kcv_.scores();
+    }
+    void set_n_folds(std::size_t n_folds) {
+      fdapde_assert(calibration_strategy_ == Calibration::kcv);
+      calibrator_kcv_.set_n_folds(n_folds);
+    }
+
+  private:
+
+    // off utils
+    Calibrator<RegressionView<void>> configure_calibrator_off(const Rcpp::List & R_lambda){
+      parse_R_lambda(R_lambda); // it initializes lambda_grid_
+      DVector<double> lambda = lambda_grid_.front();
+      configured_calibrator_ = calibrator_off_(lambda);
+      return get_configured_calibrator();
+    }
+    DVector<double> fit_off(RegressionView<void> model_view){
+      return calibrator_off_.fit(model_view);
+    }
+
+    // gcv utils 
+    Calibrator<RegressionView<void>> configure_calibrator_gcv(const Rcpp::List & R_lambda){
+      parse_R_lambda(R_lambda); // it initializes lambda_grid_
+      configured_calibrator_ = calibrator_gcv_(lambda_grid_);
+      return get_configured_calibrator();;
+    }
+    DVector<double> fit_gcv(RegressionView<void> & model_view){
+      return calibrator_gcv_.fit(model_view, lambda_grid_);
+    }
+
+    // kcv utils
+    Calibrator<RegressionView<void>> configure_calibrator_kcv(const Rcpp::List & R_lambda){
+      parse_R_lambda(R_lambda); // it initializes lambda_grid_
+      configured_calibrator_ = calibrator_kcv_(lambda_grid_, RMSE());
+      return get_configured_calibrator();;
+    }
+    DVector<double> fit_kcv(RegressionView<void> & model_view){
+      return calibrator_kcv_.fit(model_view, lambda_grid_, RMSE(model_view));
+    }
+
 };
 
 #endif   // __R_CALIBRATOR_H__

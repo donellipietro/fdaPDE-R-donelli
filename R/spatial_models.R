@@ -36,11 +36,6 @@ fdaPDE_Regression_Model <- R6::R6Class(
     set_regression_model = function(regression_model) {
       private$regression_model <- regression_model
     },
-    ## calibrator instance
-    cpp_calibrator = NULL,
-    get_cpp_calibrator = function() {
-      return(private$cpp_calibrator)
-    },
     ## initialize utils
     sanity_check_data = function(formula = NULL, data) {
       ## domain informations
@@ -57,14 +52,11 @@ fdaPDE_Regression_Model <- R6::R6Class(
     },
     init_model_and_calibrator = function(smoother_init_list) {
       ## init cpp_model & cpp_calibrator
-      cpp_pair <- regression_models_factory(
+      super$cpp_model <- regression_models_factory(
         self$domain,
         self$model_traits,
         smoother_init_list
       )
-      ## store cpp_model & cpp_calibrator
-      super$cpp_model <- cpp_pair$cpp_model
-      private$cpp_calibrator <- cpp_pair$cpp_calibrator
       ## set locations
       super$cpp_model$set_spatial_locations(self$locations)
       super$display("  Locations have been set.")
@@ -75,23 +67,29 @@ fdaPDE_Regression_Model <- R6::R6Class(
         super$cpp_model$set_covariates(self$covariates)
         super$display("  Covariates have been set.")
       }
+      ## set calibrator
+      private$set_calibrator(smoother_init_list$calibrator)
     },
     ## fit utils
-    calibrate = function(lambda) {
+    calibrate = function() {
       ## model initialization (necessary for GCV and KCV calibration strategies)
       super$cpp_model$init()
       ## calibration
-      private$cpp_calibrator$configure_calibrator(lambda)
-      lambda_cpp <- private$cpp_calibrator$fit(super$cpp_model$get_view())
+      lambda_cpp <- super$cpp_model$calibrate()
       lambda_opt <- hyperparameters(lambda_cpp[1], lambda_cpp[2])
-      ## statistical model preparation
-      private$set_lambda(lambda_opt)
       ## save calibrator's results
-      self$results$calibrator <- export_calibrator_results(private$get_cpp_calibrator())
+      self$results$calibrator <- export_calibrator_results(super$cpp_model)
     },
     ## cpp_model interfaces
     set_lambda = function(lambda) {
       super$cpp_model$set_lambda(lambda)
+    },
+    set_calibrator = function(calibrator) {
+      super$cpp_model$set_calibrator(
+        Calibration(calibrator$name),
+        calibrator$parameters,
+        calibrator$lambda
+      )
     },
     get_f = function() {
       return(as.matrix(super$cpp_model$f()))
@@ -136,17 +134,11 @@ SRPDE_Class <- R6::R6Class(
         ## save updates
         super$set_regression_model(regression_model)
         ## initialize a new calibrator
-        super$cpp_calibrator <- calibrators_factory(super$get_regression_model()$calibrator)
-      }
-      ## lambda update
-      if (!is.null(lambda)) {
-        regression_model$calibrator$lambda <- lambda ## to keep the init list updated
-        ## save updates
-        super$set_regression_model(regression_model)
+        super$set_calibrator(super$get_regression_model()$calibrator)
       }
       ## calibration
       super$display("- Calibrating the model")
-      super$calibrate(super$get_regression_model()$calibrator$lambda)
+      super$calibrate()
       ## fit
       super$display("- Fitting the model")
       super$fit()

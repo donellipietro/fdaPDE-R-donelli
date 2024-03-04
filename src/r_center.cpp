@@ -24,13 +24,13 @@
 using cpp_center = R_CENTER;
 RCPP_MODULE(cpp_center) { 
     Rcpp::class_<R_CENTER>("cpp_center")
-      .constructor() 
-      .method("centered",        &R_CENTER::centered        ) 
-      .method("mean",            &R_CENTER::mean            ) 
-      .method("set_data",        &R_CENTER::set_data        )
-      .method("set_weights",     &R_CENTER::set_weights     )
-      .method("set_smoother",    &R_CENTER::set_smoother    )
-      .method("set_calibrator",  &R_CENTER::set_calibrator  )
-      .method("init",            &R_CENTER::init            )
-      .method("solve",           &R_CENTER::solve           );
+      .constructor<int, Rcpp::Environment, int, Rcpp::List>() 
+      .method("centered",                  &R_CENTER::centered                  ) 
+      .method("mean",                      &R_CENTER::mean                      ) 
+      .method("set_data",                  &R_CENTER::set_data                  )
+      .method("set_weights",               &R_CENTER::set_weights               )
+      .method("set_spatial_locations",     &R_CENTER::set_spatial_locations     )
+      .method("set_calibrator",            &R_CENTER::set_calibrator            )
+      .method("init",                      &R_CENTER::init                      )
+      .method("solve",                     &R_CENTER::solve                     );
 }

@@ -19,17 +19,24 @@
 #include "headers/r_regression_model.h"
 
 // Rcpp modules definition
-using cpp_srpde = R_SRPDE;
-RCPP_MODULE(cpp_srpde) {
-    Rcpp::class_<R_SRPDE>("cpp_srpde") 
-      .constructor<Rcpp::Environment, int, Rcpp::List>() 
-      .method("get_view"               , &R_SRPDE::get_view               )
-      .method("f"                      , &R_SRPDE::f                      )
-      .method("beta"                   , &R_SRPDE::beta                   ) 
-      .method("set_lambda"             , &R_SRPDE::set_lambda             ) 
-      .method("set_observations"       , &R_SRPDE::set_observations       )
-      .method("set_covariates"         , &R_SRPDE::set_covariates         )
-      .method("set_spatial_locations"  , &R_SRPDE::set_spatial_locations  ) 
-      .method("init"                   , &R_SRPDE::init                   )
-      .method("solve"                  , &R_SRPDE::solve                  );  
+using cpp_rm = R_REGRESSION_MODEL;
+using cpp_regression_model = R_REGRESSION_MODEL;
+RCPP_MODULE(cpp_regression_model) {
+    Rcpp::class_<cpp_regression_model>("cpp_regression_model") 
+      .constructor<int, Rcpp::Environment, int, Rcpp::List>() 
+      .method("get_calibration_strategy"   , &cpp_regression_model::get_calibration_strategy            )
+      .method("f"                          , &cpp_regression_model::f                                   )
+      .method("beta"                       , &cpp_regression_model::beta                                ) 
+      .method("optimum"                    , &cpp_regression_model::optimum                             ) 
+      .method("gcvs"                       , &cpp_regression_model::gcvs                                )
+      .method("edfs"                       , &cpp_regression_model::edfs                                ) 
+      .method("avg_scores"                 , &cpp_regression_model::avg_scores                          ) 
+      .method("set_lambda"                 , (void (cpp_rm::*)(Rcpp::List))(&cpp_rm::set_lambda)        ) 
+      .method("set_observations"           , &cpp_regression_model::set_observations                    )
+      .method("set_covariates"             , &cpp_regression_model::set_covariates                      )
+      .method("set_spatial_locations"      , &cpp_regression_model::set_spatial_locations               ) 
+      .method("set_calibrator"             , &cpp_regression_model::set_calibrator                      ) 
+      .method("init"                       , &cpp_regression_model::init                                )
+      .method("calibrate"                  , &cpp_regression_model::calibrate                           )
+      .method("solve"                      , &cpp_regression_model::solve                               );  
 }
