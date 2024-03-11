@@ -64,6 +64,7 @@ public:
     // getters
     DMatrix<double> centered() {return results_.fitted; }
     DMatrix<double> mean() {return results_.mean; }
+    DMatrix<double> optimum() {return results_.lambda_opt; }
 
     // setters
     void set_data(const DMatrix<double>& X) { X_ = X; }
