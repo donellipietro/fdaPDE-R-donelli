@@ -50,6 +50,7 @@ template<typename RegularizationType> class R_FPCA {
     DMatrix<double> scores() const { return model_.scores(); }
     DMatrix<double> loadings() const { return model_.loadings(); }
     const SpMatrix<double>&  Psi() const { return model_.Psi(); }
+    const SpMatrix<double>&  R0() const { return model_.R0(); }
     // setters
     void set_data(const Rcpp::List & data) {
       BlockFrame<double, int> X;

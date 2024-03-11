@@ -131,8 +131,11 @@ fdaPDE_Functional_Model <- R6::R6Class(
     Psi = function() {
       return(super$cpp_model$Psi())
     },
+    R0 = function() {
+      return(super$cpp_model$R0())
+    },
     evaluate = function(f) {
-      return(self$Psi() %*% f)
+      return(as.matrix(self$Psi() %*% f))
     },
     fitted_loadings = function() {
       return(self$evaluate(self$results$loadings))
@@ -296,8 +299,6 @@ fPCA_class <- R6::R6Class(
     fit = function(calibrator = NULL, solver = NULL, n_pc = NULL) {
       ## get functional model for updating it if necessary
       fPCA_model <- super$get_functional_model()
-      ## clear previous results
-      self$results <- list()
       ## calibrator update
       if (!is.null(solver)) {
         super$display("- Setting the new solver")
@@ -332,6 +333,8 @@ fPCA_class <- R6::R6Class(
       super$display("- Saving the results")
       self$results$scores <- super$get_scores()
       self$results$loadings <- super$get_loadings()
+      n_stat_units <- nrow(self$data$X)
+      self$results$X_hat <- self$results$scores %*% t(self$results$loadings) + rep(1, n_stat_units) %*% t(self$results$X_mean)
     }
   )
 )

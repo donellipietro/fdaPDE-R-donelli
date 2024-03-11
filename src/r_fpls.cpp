@@ -26,6 +26,7 @@ RCPP_MODULE(cpp_fpls_spaceonly) {
     Rcpp::class_<cpp_fpls_spaceonly_base>("cpp_fpls_spaceonly_base")
       // getters
       .method("Psi",                      &cpp_fpls_spaceonly_base::Psi                    )
+      .method("R0",                       &cpp_fpls_spaceonly_base::R0                     )
       // setters
       .method("set_data",                 &cpp_fpls_spaceonly_base::set_data               )
       .method("set_spatial_locations",    &cpp_fpls_spaceonly_base::set_spatial_locations  )

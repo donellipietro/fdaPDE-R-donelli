@@ -28,6 +28,7 @@ RCPP_MODULE(cpp_fpca_spaceonly) {
       .method("scores",                   &cpp_fpca_spaceonly_base::scores                 )
       .method("loadings",                 &cpp_fpca_spaceonly_base::loadings               )
       .method("Psi",                      &cpp_fpca_spaceonly_base::Psi                    )
+      .method("R0",                       &cpp_fpca_spaceonly_base::R0                     )
       // setters
       .method("set_data",                 &cpp_fpca_spaceonly_base::set_data               )
       .method("set_spatial_locations",    &cpp_fpca_spaceonly_base::set_spatial_locations  )

@@ -48,6 +48,7 @@ template<typename RegularizationType> class R_FPLS {
     R_FPLS() : calibration_strategy_(Calibration::off) {}
     // getters
     const SpMatrix<double>&  Psi() const { return model_.Psi(); }
+    const SpMatrix<double>&  R0() const { return model_.R0(); }
     DMatrix<double> B(){ return model_.B(); }
     DMatrix<double> fitted(){ return model_.fitted(); }
     DMatrix<double> reconstructed(){ return model_.reconstructed(); }
