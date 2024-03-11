@@ -15,8 +15,10 @@ Rcpp::loadModule("cpp_surface_domain", TRUE)
 Rcpp::loadModule("cpp_3d_domain", TRUE)
 Rcpp::loadModule("cpp_pde_2d_fe1", TRUE)
 Rcpp::loadModule("cpp_pde_2d_fe2", TRUE)
+Rcpp::loadModule("cpp_pde_3d_fe1", TRUE)
 Rcpp::loadModule("cpp_lagrange_basis_2d_fe1", TRUE)
 Rcpp::loadModule("cpp_lagrange_basis_2d_fe2", TRUE)
+Rcpp::loadModule("cpp_lagrange_basis_3d_fe1", TRUE)
 
 
 ## spatial models

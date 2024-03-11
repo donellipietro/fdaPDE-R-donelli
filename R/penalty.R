@@ -20,7 +20,8 @@ functions_space <- function(domain, order, basis) {
   f <- Function(Vh)
   ## homogeneous forcing term
   u <- function(points) {
-    return(matrix(0, nrow = nrow(points), ncol = 1)) ## ?? correct number of rows if order > 1
+    coeff <- ifelse(ncol(domain$nodes) == 2, 3, 4)
+    return(matrix(0, nrow = nrow(points) * coeff, ncol = 1)) ## ?? correct number of rows if order > 1
   }
   return(list(
     Vh = Vh,

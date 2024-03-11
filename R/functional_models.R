@@ -49,6 +49,7 @@ fCentering_class <- R6::R6Class(
       super$display("- Saving the results")
       self$results$mean <- as.matrix(super$cpp_model$mean())
       self$results$centered <- as.matrix(super$cpp_model$centered())
+      self$results$calibration$lambda_opt <- hyperparameters(super$cpp_model$optimum()[1])
     }
   ),
   private = list(
@@ -128,6 +129,9 @@ fdaPDE_Functional_Model <- R6::R6Class(
     data = list(),
     ## options
     CENTER = NULL,
+    init = function() {
+      super$cpp_model$init()
+    },
     Psi = function() {
       return(super$cpp_model$Psi())
     },
@@ -334,14 +338,14 @@ fPCA_class <- R6::R6Class(
       self$results$scores <- super$get_scores()
       self$results$loadings <- super$get_loadings()
       n_stat_units <- nrow(self$data$X)
-      self$results$X_hat <- self$results$scores %*% t(self$results$loadings) + rep(1, n_stat_units) %*% t(self$results$X_mean)
+      self$results$X_hat <- self$results$scores %*% t(self$results$loadings) + ifelse(self$CENTER, rep(1, n_stat_units) %*% t(self$results$X_mean), 0)
     }
   )
 )
 
 fPCA_pro <- function(data,
                      fPCA_model = fPCA_init(),
-                     VERBOSE = TRUE) {
+                     VERBOSE = FALSE) {
   model <- fPCA_class$new(
     data = data,
     fPCA_model = fPCA_model,
@@ -355,7 +359,7 @@ fPCA <- function(data,
                  penalty = simple_laplacian_penalty(),
                  center = centering(),
                  solver = sequential(),
-                 VERBOSE = TRUE) {
+                 VERBOSE = FALSE) {
   ## overwriting smoother defaults with the required ones
   ## necessary to guarantee the consistency with the other statistical models
   ## while providing a clear interface to the final user
@@ -452,7 +456,7 @@ fPLS_class <- R6::R6Class(
       self$results$B_hat <- super$B()
       n_stat_units <- nrow(self$data$X)
       self$results$Y_hat <- super$fitted() + rep(1, n_stat_units) %*% t(self$results$Y_mean)
-      self$results$X_hat <- super$reconstructed() + rep(1, n_stat_units) %*% t(self$results$X_mean)
+      self$results$X_hat <- super$reconstructed() + ifelse(self$CENTER, rep(1, n_stat_units) %*% t(self$results$X_mean), 0)
       super$save_fPLS_results()
     }
   )
@@ -460,7 +464,7 @@ fPLS_class <- R6::R6Class(
 
 fPLS_pro <- function(data,
                      fPLS_model = fPLS_init(),
-                     VERBOSE = TRUE) {
+                     VERBOSE = FALSE) {
   model <- fPLS_class$new(
     data = data,
     fPLS_model = fPLS_model,
@@ -475,7 +479,7 @@ fPLS <- function(data,
                  center = centering(),
                  solver = sequential(),
                  smoother = smoothing(),
-                 VERBOSE = TRUE) {
+                 VERBOSE = FALSE) {
   ## overwriting smoother defaults with the required ones
   ## necessary to guarantee the consistency with the other statistical models
   ## while providing a clear interface to the final user
