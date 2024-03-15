@@ -248,7 +248,7 @@ monolithic_params <- function() {
 #' @export
 monolithic <- function(calibrator = hyperparameters(space = 1e-4), ...) {
   ## check calibrator availability
-  if (calibrator$name != "off") {
+  if (parse_calibrator(calibrator)$name != "off") {
     stop("Only off calibrator is available for this solution policy")
   }
   ##
