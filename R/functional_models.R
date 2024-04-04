@@ -133,10 +133,10 @@ fdaPDE_Functional_Model <- R6::R6Class(
       super$cpp_model$init()
     },
     Psi = function() {
-      return(super$cpp_model$Psi())
+      return(self$Psi_mat)
     },
     R0 = function() {
-      return(super$cpp_model$R0())
+      return(self$R0_mat)
     },
     evaluate = function(f) {
       return(as.matrix(self$Psi() %*% f))
@@ -218,6 +218,8 @@ fdaPDE_Functional_Model <- R6::R6Class(
     fit = function() {
       ## fitting the statistical model
       super$cpp_model$init()
+      self$R0_mat <- super$cpp_model$R0()
+      self$Psi_mat <- super$cpp_model$Psi()
       super$cpp_model$solve()
     },
     ## utils
@@ -338,7 +340,11 @@ fPCA_class <- R6::R6Class(
       self$results$scores <- super$get_scores()
       self$results$loadings <- super$get_loadings()
       n_stat_units <- nrow(self$data$X)
-      self$results$X_hat <- self$results$scores %*% t(self$results$loadings) + ifelse(self$CENTER, rep(1, n_stat_units) %*% t(self$results$X_mean), 0)
+      if (self$CENTER) {
+        self$results$X_hat <- self$results$scores %*% t(self$results$loadings) + rep(1, n_stat_units) %*% t(self$results$X_mean)
+      } else {
+        self$results$X_hat <- self$results$scores %*% t(self$results$loadings)
+      }
     }
   )
 )

@@ -23,6 +23,9 @@ fdaPDE_Base_Model <- R6::R6Class(
     results = list(),
     ## utils
     model_traits = list(),
+    ## FEM
+    R0_mat = NULL,
+    Psi_mat = NULL,
     ## options
     VERBOSE = FALSE
   ),
