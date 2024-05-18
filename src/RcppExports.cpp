@@ -15,7 +15,9 @@ Rcpp::Rostream<false>& Rcpp::Rcerr = Rcpp::Rcpp_cerr_get();
 RcppExport SEXP _rcpp_module_boot_cpp_center();
 RcppExport SEXP _rcpp_module_boot_cpp_fpca_spaceonly();
 RcppExport SEXP _rcpp_module_boot_cpp_fpca_spacetimeseparable();
-RcppExport SEXP _rcpp_module_boot_cpp_fpls_spaceonly();
+RcppExport SEXP _rcpp_module_boot_cpp_fpls_r_spaceonly();
+RcppExport SEXP _rcpp_module_boot_cpp_fpls_a_spaceonly();
+RcppExport SEXP _rcpp_module_boot_cpp_fpls_sb_spaceonly();
 RcppExport SEXP _rcpp_module_boot_cpp_lagrange_basis_2d_fe1();
 RcppExport SEXP _rcpp_module_boot_cpp_lagrange_basis_2d_fe2();
 RcppExport SEXP _rcpp_module_boot_cpp_lagrange_basis_3d_fe1();
@@ -32,7 +34,9 @@ static const R_CallMethodDef CallEntries[] = {
     {"_rcpp_module_boot_cpp_center", (DL_FUNC) &_rcpp_module_boot_cpp_center, 0},
     {"_rcpp_module_boot_cpp_fpca_spaceonly", (DL_FUNC) &_rcpp_module_boot_cpp_fpca_spaceonly, 0},
     {"_rcpp_module_boot_cpp_fpca_spacetimeseparable", (DL_FUNC) &_rcpp_module_boot_cpp_fpca_spacetimeseparable, 0},
-    {"_rcpp_module_boot_cpp_fpls_spaceonly", (DL_FUNC) &_rcpp_module_boot_cpp_fpls_spaceonly, 0},
+    {"_rcpp_module_boot_cpp_fpls_r_spaceonly", (DL_FUNC) &_rcpp_module_boot_cpp_fpls_r_spaceonly, 0},
+    {"_rcpp_module_boot_cpp_fpls_a_spaceonly", (DL_FUNC) &_rcpp_module_boot_cpp_fpls_a_spaceonly, 0},
+    {"_rcpp_module_boot_cpp_fpls_sb_spaceonly", (DL_FUNC) &_rcpp_module_boot_cpp_fpls_sb_spaceonly, 0},
     {"_rcpp_module_boot_cpp_lagrange_basis_2d_fe1", (DL_FUNC) &_rcpp_module_boot_cpp_lagrange_basis_2d_fe1, 0},
     {"_rcpp_module_boot_cpp_lagrange_basis_2d_fe2", (DL_FUNC) &_rcpp_module_boot_cpp_lagrange_basis_2d_fe2, 0},
     {"_rcpp_module_boot_cpp_lagrange_basis_3d_fe1", (DL_FUNC) &_rcpp_module_boot_cpp_lagrange_basis_3d_fe1, 0},

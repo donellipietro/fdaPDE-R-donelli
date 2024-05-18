@@ -398,6 +398,7 @@ fPLS_init <- function(penalty = simple_laplacian_penalty(),
                       center = NULL,
                       solver = sequential(),
                       smoother = smoothing(),
+                      mode = "fPLS-R",
                       ...) {
   fPLS_init_list <- list(
     name = "fPLS",
@@ -411,6 +412,7 @@ fPLS_init <- function(penalty = simple_laplacian_penalty(),
     ## method parameters
     parameters = fPLS_params(...),
     ## options
+    MODE = mode,
     CENTER = parse_center(center, as.option = TRUE)
   )
   return(fPLS_init_list)

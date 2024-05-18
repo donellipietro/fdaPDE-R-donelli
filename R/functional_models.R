@@ -252,21 +252,43 @@ fdaPDE_Functional_Model <- R6::R6Class(
       return(as.matrix(super$cpp_model$loadings()))
     },
     ## fPLS cpp_model interfaces
-    fitted = function() {
-      return(as.matrix(super$cpp_model$fitted()))
+    fitted = function(h = 0) {
+      return(as.matrix(super$cpp_model$fitted(h)))
     },
-    reconstructed = function() {
-      return(as.matrix(super$cpp_model$reconstructed()))
+    reconstructed = function(h = 0) {
+      return(as.matrix(super$cpp_model$reconstructed(h)))
     },
-    B = function() {
-      return(as.matrix(super$cpp_model$B()))
+    Beta = function(h = 0) {
+      return(as.matrix(super$cpp_model$Beta(h)))
     },
-    save_fPLS_results = function() {
-      self$results$V <- as.matrix(super$cpp_model$Y_space_directions())
-      self$results$W <- as.matrix(super$cpp_model$X_space_directions())
-      self$results$C <- as.matrix(super$cpp_model$Y_loadings())
-      self$results$P <- as.matrix(super$cpp_model$X_loadings())
-      self$results$T <- as.matrix(super$cpp_model$X_latent_scores())
+    save_fPLS_results = function(MODE = "fPLS-R") {
+      switch(MODE, 
+        "fPLS-R" = {
+          self$results$V <- as.matrix(super$cpp_model$Y_space_directions())
+          self$results$W <- as.matrix(super$cpp_model$X_space_directions())
+          self$results$C <- as.matrix(super$cpp_model$Y_loadings())
+          self$results$R <- as.matrix(super$cpp_model$X_loadings())
+          self$results$T <- as.matrix(super$cpp_model$X_latent_scores())
+          self$results$U <- as.matrix(super$cpp_model$Y_latent_scores())
+        },
+        "fPLS-A" = {
+          self$results$V <- as.matrix(super$cpp_model$Y_space_directions())
+          self$results$W <- as.matrix(super$cpp_model$X_space_directions())
+          self$results$S <- as.matrix(super$cpp_model$Y_loadings())
+          self$results$R <- as.matrix(super$cpp_model$X_loadings())
+          self$results$T <- as.matrix(super$cpp_model$X_latent_scores())
+          self$results$U <- as.matrix(super$cpp_model$Y_latent_scores())
+        },
+        "fPLS-SB" = {
+          self$results$V <- as.matrix(super$cpp_model$Y_space_directions())
+          self$results$W <- as.matrix(super$cpp_model$X_space_directions())
+          self$results$S <- as.matrix(super$cpp_model$Y_loadings())
+          self$results$R <- as.matrix(super$cpp_model$X_loadings())
+          self$results$T <- as.matrix(super$cpp_model$X_latent_scores())
+          self$results$U <- as.matrix(super$cpp_model$Y_latent_scores())
+        }
+      )
+
     }
   )
 )
@@ -401,11 +423,13 @@ fPLS_class <- R6::R6Class(
   classname = "fPLS",
   inherit = fdaPDE_Functional_Model,
   public = list(
+    MODE = NULL,
     ## constructor
     initialize = function(data, fPLS_model, VERBOSE) {
       ## save options
       super$set_verbosity(VERBOSE)
       self$CENTER <- fPLS_model$CENTER
+      self$MODE <- fPLS_model$MODE
       super$display("\n\nfPLS model")
       ## save fPLS_model
       super$set_functional_model(fPLS_model)
@@ -426,7 +450,7 @@ fPLS_class <- R6::R6Class(
     },
     ## utils
     fit = function(calibrator = NULL, solver = NULL, n_comp = NULL) {
-      ## get functional model for updating it if necessary
+      ## get functional model for updating it ief necessary
       fPLS_model <- super$get_functional_model()
       ## calibrator update
       if (!is.null(solver)) {
@@ -450,7 +474,7 @@ fPLS_class <- R6::R6Class(
       }
       ## n_comp update
       if (!is.null(n_comp)) {
-        fPLS_model$solver$parameters$n_comp <- n_comp
+        fPLS_model$parameters$n_comp <- n_comp
         super$set_functional_model(fPLS_model)
         super$set_ncomp(n_comp)
       }
@@ -459,11 +483,26 @@ fPLS_class <- R6::R6Class(
       super$fit()
       ## save results
       super$display("- Saving the results")
-      self$results$B_hat <- super$B()
+      ## self$results$B_hat <- super$B()
       n_stat_units <- nrow(self$data$X)
-      self$results$Y_hat <- super$fitted() + rep(1, n_stat_units) %*% t(self$results$Y_mean)
-      self$results$X_hat <- super$reconstructed() + ifelse(self$CENTER, rep(1, n_stat_units) %*% t(self$results$X_mean), 0)
-      super$save_fPLS_results()
+      self$results$Y_hat <- list()
+      self$results$X_hat <- list()
+      for(h in 1:fPLS_model$parameters$n_comp) {
+        if(self$CENTER) {
+          self$results$Y_hat[[h]] <- super$fitted(h) + rep(1, n_stat_units) %*% t(self$results$Y_mean)
+          self$results$X_hat[[h]] <- super$reconstructed(h) + rep(1, n_stat_units) %*% t(self$results$X_mean)
+        } else {
+          self$results$Y_hat[[h]] <- super$fitted(h)
+          self$results$X_hat[[h]] <- super$reconstructed(h)
+        }
+      }
+      if(self$MODE == "fPLS-R") {
+        self$results$Beta_hat <- list()
+        for(h in 1:fPLS_model$parameters$n_comp) {
+          self$results$Beta_hat[[h]] <- super$Beta(h)
+        }
+      }
+      super$save_fPLS_results(self$MODE)
     }
   )
 )
@@ -485,6 +524,7 @@ fPLS <- function(data,
                  center = centering(),
                  solver = sequential(),
                  smoother = smoothing(),
+                 mode = "fPLS-R",
                  VERBOSE = FALSE) {
   ## overwriting smoother defaults with the required ones
   ## necessary to guarantee the consistency with the other statistical models
@@ -504,6 +544,7 @@ fPLS <- function(data,
       TRUE
     )
   )
+  fPLS_model$MODE <- mode
   fPLS_model$solver <- solver
   fPLS_model$smoother <- smoother
   ## return wrapped model

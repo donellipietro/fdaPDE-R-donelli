@@ -85,10 +85,24 @@ functional_models_factory <- function(domain, model_traits, fm_init_list) {
       ## model initialization
       switch(model_traits$regularization_type,
         "SpaceOnly" = {
+          cpp_fpls_mode <- switch(fm_init_list$MODE,
+            "fPLS-R" = {
+              cpp_fpls_r_spaceonly
+            },
+            "fPLS-A" = {
+              cpp_fpls_a_spaceonly
+            },
+            "fPLS-SB" = {
+              cpp_fpls_sb_spaceonly
+            },
+            {
+              stop("This fPLS mode is not implemented.")
+            }
+          )
           ## statistical model initialization
           cpp_fPLS <- new(
             ## cpp module
-            cpp_fpls_spaceonly,
+            cpp_fpls_mode,
             ## contructor's arguments
             pde,
             Sampling(model_traits$sampling_type),

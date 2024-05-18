@@ -35,5 +35,7 @@ Rcpp::loadModule("cpp_center", TRUE)
 Rcpp::loadModule("cpp_fpca_spaceonly", TRUE)
 Rcpp::loadModule("cpp_fpca_spacetimeseparable", TRUE)
 
-## fPL
-Rcpp::loadModule("cpp_fpls_spaceonly", TRUE)
+## fPLS
+Rcpp::loadModule("cpp_fpls_r_spaceonly", TRUE)
+Rcpp::loadModule("cpp_fpls_a_spaceonly", TRUE)
+Rcpp::loadModule("cpp_fpls_sb_spaceonly", TRUE)

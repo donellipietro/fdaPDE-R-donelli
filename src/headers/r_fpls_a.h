@@ -14,8 +14,8 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-#ifndef __R_FPLS_H__
-#define __R_FPLS_H__
+#ifndef __R_FPLS_A_H__
+#define __R_FPLS_A_H__
 
 // we only include RcppEigen.h which pulls Rcpp.h in for us
 #include <RcppEigen.h>
@@ -30,33 +30,36 @@ using fdapde::models::SpaceTimeSeparable;
 // pde
 #include "r_pde.h"
 
-// fpca
-#include <fdaPDE/models/functional/fpls.h>
-using fdapde::models::FPLS;
+// fpls
+#include <fdaPDE/models/functional/fpls_base.h>
+#include <fdaPDE/models/functional/fpls_a.h>
+using fdapde::models::FPLS_BASE;
+using fdapde::models::FPLS_A;
 
 // rsvd
 #include <fdaPDE/models/functional/regularized_svd.h>
 #include "r_rsvd.h"
 using fdapde::models::RSVDType;
 
-// generic fPCA model wrapper signature
-template<typename RegularizationType> class R_FPLS {
+// generic fPLS-R model wrapper signature
+template<typename RegularizationType> class R_FPLS_A {
   public:
-    using ModelType = std::decay_t<FPLS<RegularizationType>>;
-    using SolverType = RSVDType<ModelType>;
+    using ModelType = std::decay_t<FPLS_A<RegularizationType>>;
+    using ModelBaseType = std::decay_t<FPLS_BASE<RegularizationType, ModelType>>;
+    using SolverType = RSVDType<ModelBaseType>;
     // constructor
-    R_FPLS() : calibration_strategy_(Calibration::off) {}
+    R_FPLS_A() : calibration_strategy_(Calibration::off) {}
     // getters
     const SpMatrix<double>&  Psi() const { return model_.Psi(); }
     const SpMatrix<double>&  R0() const { return model_.R0(); }
-    DMatrix<double> B(){ return model_.B(); }
-    DMatrix<double> fitted(){ return model_.fitted(); }
-    DMatrix<double> reconstructed(){ return model_.reconstructed(); }
+    DMatrix<double> fitted(std::size_t h){ return model_.fitted(h); }
+    DMatrix<double> reconstructed(std::size_t h){ return model_.reconstructed(h); }
     DMatrix<double> Y_space_directions(){ return model_.Y_space_directions(); }
     DMatrix<double> Y_loadings(){ return model_.Y_loadings(); }
     DMatrix<double> X_space_directions(){ return model_.X_space_directions(); }
     DMatrix<double> X_loadings(){ return model_.X_loadings(); }
     DMatrix<double> X_latent_scores(){ return model_.X_latent_scores(); }
+    DMatrix<double> Y_latent_scores(){ return model_.Y_latent_scores(); }
     // setters
     void set_data(const Rcpp::List & data) {
       BlockFrame<double, int> df;
@@ -80,7 +83,7 @@ template<typename RegularizationType> class R_FPLS {
     }
     void set_solver(int policy, Rcpp::List rsvd_params,
                     int calibration_strategy, Rcpp::List calibrator_params, Rcpp::List lambda) {
-      rsvd_ = R_RSVD<ModelType>(RSVDSolutionPolicy(policy), rsvd_params, Calibration(calibration_strategy), calibrator_params);
+      rsvd_ = R_RSVD<ModelBaseType>(RSVDSolutionPolicy(policy), rsvd_params, Calibration(calibration_strategy), calibrator_params);
       calibration_strategy_ = rsvd_.calibration();
       set_lambda(lambda);
     }
@@ -92,7 +95,7 @@ template<typename RegularizationType> class R_FPLS {
     void solve() { model_.solve(); }
   protected:
     ModelType model_;
-    R_RSVD<ModelType> rsvd_;
+    R_RSVD<ModelBaseType> rsvd_;
     Calibration calibration_strategy_;
     std::vector<DVector<double>> lambda_grid_;
     // utilities
@@ -106,20 +109,20 @@ template<typename RegularizationType> class R_FPLS {
     }
 };
 
-// implementation of the fPCA model wrapper for SpaceOnly regulatization
-class R_FPLS_SpaceOnly : public R_FPLS<SpaceOnly> {
+// implementation of the fPLS model wrapper for SpaceOnly regulatization
+class R_FPLS_A_SpaceOnly : public R_FPLS_A<SpaceOnly> {
   public:
-    R_FPLS_SpaceOnly(Rcpp::Environment pde,
-                     int sampling_type,
-                     Rcpp::List fPCA_params) {
+    R_FPLS_A_SpaceOnly(Rcpp::Environment pde,
+                      int sampling_type,
+                      Rcpp::List fPLS_params) {
         // recover pointer to penalty
         SEXP pdeptr = pde[".pointer"];
         PDEWrapper* ptr = reinterpret_cast<PDEWrapper*>(R_ExternalPtrAddr(pdeptr));
         // set model instance
         model_ = ModelType(ptr->get_pde(), Sampling(sampling_type));
         // model configuration
-        model_.set_ncomp(fPCA_params["n_comp"]);
+        model_.set_ncomp(fPLS_params["n_comp"]);
     }
 };
 
-#endif // __R_FPLS_H__
+#endif // __R_FPLS_A_H__
