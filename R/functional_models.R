@@ -264,28 +264,28 @@ fdaPDE_Functional_Model <- R6::R6Class(
     save_fPLS_results = function(MODE = "fPLS-R") {
       switch(MODE, 
         "fPLS-R" = {
-          self$results$V <- as.matrix(super$cpp_model$Y_space_directions())
-          self$results$W <- as.matrix(super$cpp_model$X_space_directions())
-          self$results$C <- as.matrix(super$cpp_model$Y_loadings())
-          self$results$R <- as.matrix(super$cpp_model$X_loadings())
-          self$results$T <- as.matrix(super$cpp_model$X_latent_scores())
-          self$results$U <- as.matrix(super$cpp_model$Y_latent_scores())
+          self$results$Y_space_directions <- as.matrix(super$cpp_model$Y_space_directions())
+          self$results$X_space_directions <- as.matrix(super$cpp_model$X_space_directions())
+          self$results$Y_loadings <- as.matrix(super$cpp_model$Y_loadings())
+          self$results$X_loadings <- as.matrix(super$cpp_model$X_loadings())
+          self$results$X_latent_scores <- as.matrix(super$cpp_model$X_latent_scores())
+          self$results$Y_latent_scores <- as.matrix(super$cpp_model$Y_latent_scores())
         },
         "fPLS-A" = {
-          self$results$V <- as.matrix(super$cpp_model$Y_space_directions())
-          self$results$W <- as.matrix(super$cpp_model$X_space_directions())
-          self$results$S <- as.matrix(super$cpp_model$Y_loadings())
-          self$results$R <- as.matrix(super$cpp_model$X_loadings())
-          self$results$T <- as.matrix(super$cpp_model$X_latent_scores())
-          self$results$U <- as.matrix(super$cpp_model$Y_latent_scores())
+          self$results$Y_space_directions <- as.matrix(super$cpp_model$Y_space_directions())
+          self$results$X_space_directions <- as.matrix(super$cpp_model$X_space_directions())
+          self$results$Y_loadings <- as.matrix(super$cpp_model$Y_loadings())
+          self$results$X_loadings <- as.matrix(super$cpp_model$X_loadings())
+          self$results$X_latent_scores <- as.matrix(super$cpp_model$X_latent_scores())
+          self$results$Y_latent_scores <- as.matrix(super$cpp_model$Y_latent_scores())
         },
         "fPLS-SB" = {
-          self$results$V <- as.matrix(super$cpp_model$Y_space_directions())
-          self$results$W <- as.matrix(super$cpp_model$X_space_directions())
-          self$results$S <- as.matrix(super$cpp_model$Y_loadings())
-          self$results$R <- as.matrix(super$cpp_model$X_loadings())
-          self$results$T <- as.matrix(super$cpp_model$X_latent_scores())
-          self$results$U <- as.matrix(super$cpp_model$Y_latent_scores())
+          self$results$Y_space_directions <- as.matrix(super$cpp_model$Y_space_directions())
+          self$results$X_space_directions <- as.matrix(super$cpp_model$X_space_directions())
+          self$results$Y_loadings <- as.matrix(super$cpp_model$Y_loadings())
+          self$results$X_loadings <- as.matrix(super$cpp_model$X_loadings())
+          self$results$X_latent_scores <- as.matrix(super$cpp_model$X_latent_scores())
+          self$results$Y_latent_scores <- as.matrix(super$cpp_model$Y_latent_scores())
         }
       )
 
