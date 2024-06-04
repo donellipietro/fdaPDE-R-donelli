@@ -18,6 +18,15 @@
 // [[Rcpp::depends(RcppEigen)]]
 #include "headers/r_functional_space.h"
 
+using cpp_lagrange_basis_1d_fe1 = R_FunctionalSpace<1,1,1>;
+RCPP_MODULE(cpp_lagrange_basis_1d_fe1) {
+    Rcpp::class_<R_FunctionalSpace<1,1,1>>("cpp_lagrange_basis_1d_fe1")
+      .constructor<Rcpp::Environment, int>()
+      .method("size"      , &R_FunctionalSpace<1,1,1>::size     )
+      .method("eval"      , &R_FunctionalSpace<1,1,1>::eval     )
+      .method("integrate" , &R_FunctionalSpace<1,1,1>::integrate);
+}
+
 using cpp_lagrange_basis_2d_fe1 = R_FunctionalSpace<2,2,1>;
 RCPP_MODULE(cpp_lagrange_basis_2d_fe1) {
     Rcpp::class_<R_FunctionalSpace<2,2,1>>("cpp_lagrange_basis_2d_fe1")

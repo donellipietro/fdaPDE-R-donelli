@@ -105,7 +105,9 @@ make_pde <- function(L, u, dirichlet_bc = NULL, initial_condition = NULL) {
   fe_order <- L$f$FunctionSpace$fe_order ## finite element order
   pde_ <- NULL
   if (fe_order == 1) { ## linear finite elements
-    if (ncol(D$nodes()) == 2) {
+    if (ncol(D$nodes()) == 1) {
+      pde_ <- new(cpp_pde_1d_fe1, D, pde_type - 1, pde_parameters)
+    } else if (ncol(D$nodes()) == 2) {
       pde_ <- new(cpp_pde_2d_fe1, D, pde_type - 1, pde_parameters)
     } else {
       pde_ <- new(cpp_pde_3d_fe1, D, pde_type - 1, pde_parameters)

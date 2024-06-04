@@ -10,12 +10,15 @@ NULL
 
 ## utils
 Rcpp::loadModule("cpp_network_domain", TRUE)
+Rcpp::loadModule("cpp_1d_domain", TRUE)
 Rcpp::loadModule("cpp_2d_domain", TRUE)
 Rcpp::loadModule("cpp_surface_domain", TRUE)
 Rcpp::loadModule("cpp_3d_domain", TRUE)
+Rcpp::loadModule("cpp_pde_1d_fe1", TRUE)
 Rcpp::loadModule("cpp_pde_2d_fe1", TRUE)
 Rcpp::loadModule("cpp_pde_2d_fe2", TRUE)
 Rcpp::loadModule("cpp_pde_3d_fe1", TRUE)
+Rcpp::loadModule("cpp_lagrange_basis_1d_fe1", TRUE)
 Rcpp::loadModule("cpp_lagrange_basis_2d_fe1", TRUE)
 Rcpp::loadModule("cpp_lagrange_basis_2d_fe2", TRUE)
 Rcpp::loadModule("cpp_lagrange_basis_3d_fe1", TRUE)

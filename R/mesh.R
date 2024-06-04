@@ -65,7 +65,9 @@ setMethod("Mesh",
         m <- ncol(domain$elements) - 1
         n <- ncol(domain$nodes)
         ## derive domain type (TODO: handle network domains)
-        if (m == 2 && n == 2) {
+        if (m == 1 && n == 1) {
+            name_flag <- "1d"
+        } else if (m == 2 && n == 2) {
             name_flag <- "2d"
         } else if (m == 2 && n == 3) {
             name_flag <- "surface"

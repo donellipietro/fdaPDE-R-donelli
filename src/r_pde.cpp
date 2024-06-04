@@ -18,6 +18,21 @@
 // [[Rcpp::depends(RcppEigen)]]
 #include "headers/r_pde.h"
 
+
+using cpp_pde_1d_fe1 = R_PDE<1, 1, 1>;
+RCPP_MODULE(cpp_pde_1d_fe1) {
+    Rcpp::class_<R_PDE<1,1,1>>("cpp_pde_1d_fe1")
+      .constructor<Rcpp::Environment, int, Rcpp::Nullable<Rcpp::List>>()
+      .method("get_quadrature_nodes" , &R_PDE<1,1,1>::get_quadrature_nodes )
+      .method("get_dofs_coordinates" , &R_PDE<1,1,1>::get_dofs_coordinates )
+      .method("mass"                 , &R_PDE<1,1,1>::R0                   )
+      .method("stiff"                , &R_PDE<1,1,1>::R1                   )
+      .method("force"                , &R_PDE<1,1,1>::u                    )
+      .method("set_dirichlet_bc"     , &R_PDE<1,1,1>::set_dirichlet_bc     )
+      .method("set_forcing"          , &R_PDE<1,1,1>::set_forcing          )
+      .method("set_initial_condition", &R_PDE<1,1,1>::set_initial_condition)
+      .method("init"                 , &R_PDE<1,1,1>::init                 );
+}
 using cpp_pde_2d_fe1 = R_PDE<2,2,1>;
 RCPP_MODULE(cpp_pde_2d_fe1) {
     Rcpp::class_<R_PDE<2,2,1>>("cpp_pde_2d_fe1")

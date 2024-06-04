@@ -27,6 +27,15 @@ RCPP_MODULE(cpp_network_domain) {
       .method("neighbors", &R_Mesh<1,2>::neighbors)
       .method("boundary" , &R_Mesh<1,2>::boundary );
 }
+using cpp_1d_domain = R_Mesh<1,1>;
+RCPP_MODULE(cpp_1d_domain) {
+    Rcpp::class_<R_Mesh<1,1>>("cpp_1d_domain")
+      .constructor<Rcpp::List>()
+      .method("nodes"    , &R_Mesh<1,1>::nodes    )
+      .method("elements" , &R_Mesh<1,1>::elements )
+      .method("neighbors", &R_Mesh<1,1>::neighbors)
+      .method("boundary" , &R_Mesh<1,1>::boundary );
+}
 using cpp_2d_domain = R_Mesh<2,2>;
 RCPP_MODULE(cpp_2d_domain) {
     Rcpp::class_<R_Mesh<2,2>>("cpp_2d_domain")
