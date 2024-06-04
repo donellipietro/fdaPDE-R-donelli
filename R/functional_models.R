@@ -480,6 +480,12 @@ fPLS_class <- R6::R6Class(
       }
       ## fit
       super$display("- Fitting the model")
+      if(self$MODE != "fPLS-R" && fPLS_model$parameters$n_comp > ncol(self$data$Y)){
+        warning("n_comp set to n_resp")
+        fPLS_model$parameters$n_comp <- ncol(self$data$Y)
+        super$set_functional_model(fPLS_model)
+        super$set_ncomp(ncol(self$data$Y))
+      }
       super$fit()
       ## save results
       super$display("- Saving the results")
