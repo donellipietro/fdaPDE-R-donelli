@@ -83,16 +83,18 @@ template <int M, int N, int R> class R_PDE : public PDEWrapper {
             auto L = mu * laplacian<FEM>();
             pde_ = PDEType<decltype(L)>(domain_, L);
         } break;
-        case pde_type::second_order_elliptic: {
-            SMatrix<M> K = Rcpp::as<DMatrix<double>>(pde_parameters_["diffusion"]);
-            auto L = diffusion<FEM>(K) + advection<FEM>(b) + reaction<FEM>(c);
-            pde_ = PDEType<decltype(L)>(domain_, L);
-        } break;
-        case pde_type::second_order_parabolic: {
-            SMatrix<M> K = Rcpp::as<DMatrix<double>>(pde_parameters_["diffusion"]);
-            auto L = dt<FEM>() + diffusion<FEM>(K) + advection<FEM>(b) + reaction<FEM>(c);
-            pde_ = PDEType<decltype(L)>(domain_, DVector<double>(), L);
-        } break;
+        /*
+            case pde_type::second_order_elliptic: {
+                SMatrix<M> K = Rcpp::as<DMatrix<double>>(pde_parameters_["diffusion"]);
+                auto L = diffusion<FEM>(K) + advection<FEM>(b) + reaction<FEM>(c);
+                pde_ = PDEType<decltype(L)>(domain_, L);
+            } break;
+            case pde_type::second_order_parabolic: {
+                SMatrix<M> K = Rcpp::as<DMatrix<double>>(pde_parameters_["diffusion"]);
+                auto L = dt<FEM>() + diffusion<FEM>(K) + advection<FEM>(b) + reaction<FEM>(c);
+                pde_ = PDEType<decltype(L)>(domain_, DVector<double>(), L);
+            } break;
+        */
         }
     }
     // setters

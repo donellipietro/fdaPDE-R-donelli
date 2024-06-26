@@ -21,6 +21,7 @@ RcppExport SEXP _rcpp_module_boot_cpp_fpls_sb_spaceonly();
 RcppExport SEXP _rcpp_module_boot_cpp_lagrange_basis_1d_fe1();
 RcppExport SEXP _rcpp_module_boot_cpp_lagrange_basis_2d_fe1();
 RcppExport SEXP _rcpp_module_boot_cpp_lagrange_basis_2d_fe2();
+RcppExport SEXP _rcpp_module_boot_cpp_lagrange_basis_surface_fe1();
 RcppExport SEXP _rcpp_module_boot_cpp_lagrange_basis_3d_fe1();
 RcppExport SEXP _rcpp_module_boot_cpp_network_domain();
 RcppExport SEXP _rcpp_module_boot_cpp_1d_domain();
@@ -30,6 +31,7 @@ RcppExport SEXP _rcpp_module_boot_cpp_3d_domain();
 RcppExport SEXP _rcpp_module_boot_cpp_pde_1d_fe1();
 RcppExport SEXP _rcpp_module_boot_cpp_pde_2d_fe1();
 RcppExport SEXP _rcpp_module_boot_cpp_pde_2d_fe2();
+RcppExport SEXP _rcpp_module_boot_cpp_pde_surface_fe1();
 RcppExport SEXP _rcpp_module_boot_cpp_pde_3d_fe1();
 RcppExport SEXP _rcpp_module_boot_cpp_regression_model();
 
@@ -43,6 +45,7 @@ static const R_CallMethodDef CallEntries[] = {
     {"_rcpp_module_boot_cpp_lagrange_basis_1d_fe1", (DL_FUNC) &_rcpp_module_boot_cpp_lagrange_basis_1d_fe1, 0},
     {"_rcpp_module_boot_cpp_lagrange_basis_2d_fe1", (DL_FUNC) &_rcpp_module_boot_cpp_lagrange_basis_2d_fe1, 0},
     {"_rcpp_module_boot_cpp_lagrange_basis_2d_fe2", (DL_FUNC) &_rcpp_module_boot_cpp_lagrange_basis_2d_fe2, 0},
+    {"_rcpp_module_boot_cpp_lagrange_basis_surface_fe1", (DL_FUNC) &_rcpp_module_boot_cpp_lagrange_basis_surface_fe1, 0},
     {"_rcpp_module_boot_cpp_lagrange_basis_3d_fe1", (DL_FUNC) &_rcpp_module_boot_cpp_lagrange_basis_3d_fe1, 0},
     {"_rcpp_module_boot_cpp_network_domain", (DL_FUNC) &_rcpp_module_boot_cpp_network_domain, 0},
     {"_rcpp_module_boot_cpp_1d_domain", (DL_FUNC) &_rcpp_module_boot_cpp_1d_domain, 0},
@@ -52,6 +55,7 @@ static const R_CallMethodDef CallEntries[] = {
     {"_rcpp_module_boot_cpp_pde_1d_fe1", (DL_FUNC) &_rcpp_module_boot_cpp_pde_1d_fe1, 0},
     {"_rcpp_module_boot_cpp_pde_2d_fe1", (DL_FUNC) &_rcpp_module_boot_cpp_pde_2d_fe1, 0},
     {"_rcpp_module_boot_cpp_pde_2d_fe2", (DL_FUNC) &_rcpp_module_boot_cpp_pde_2d_fe2, 0},
+    {"_rcpp_module_boot_cpp_pde_surface_fe1", (DL_FUNC) &_rcpp_module_boot_cpp_pde_surface_fe1, 0},
     {"_rcpp_module_boot_cpp_pde_3d_fe1", (DL_FUNC) &_rcpp_module_boot_cpp_pde_3d_fe1, 0},
     {"_rcpp_module_boot_cpp_regression_model", (DL_FUNC) &_rcpp_module_boot_cpp_regression_model, 0},
     {NULL, NULL, 0}

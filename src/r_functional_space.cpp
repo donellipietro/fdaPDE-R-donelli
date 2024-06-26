@@ -45,6 +45,16 @@ RCPP_MODULE(cpp_lagrange_basis_2d_fe2) {
       .method("integrate" , &R_FunctionalSpace<2,2,2>::integrate);
 }
 
+using cpp_lagrange_basis_surface_fe1 = R_FunctionalSpace<2,3,1>;
+RCPP_MODULE(cpp_lagrange_basis_surface_fe1) {
+    Rcpp::class_<R_FunctionalSpace<2,3,1>>("cpp_lagrange_basis_surface_fe1")
+      .constructor<Rcpp::Environment, int>()
+      .method("size"      , &R_FunctionalSpace<2,3,1>::size     )
+      .method("eval"      , &R_FunctionalSpace<2,3,1>::eval     )
+      .method("integrate" , &R_FunctionalSpace<2,3,1>::integrate);
+}
+
+
 using cpp_lagrange_basis_3d_fe1 = R_FunctionalSpace<3,3,1>;
 RCPP_MODULE(cpp_lagrange_basis_3d_fe1) {
     Rcpp::class_<R_FunctionalSpace<3,3,1>>("cpp_lagrange_basis_3d_fe1")
