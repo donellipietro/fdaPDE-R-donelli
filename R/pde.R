@@ -110,7 +110,11 @@ make_pde <- function(L, u, dirichlet_bc = NULL, initial_condition = NULL) {
     } else if (ncol(D$nodes()) == 2) {
       pde_ <- new(cpp_pde_2d_fe1, D, pde_type - 1, pde_parameters)
     } else {
-      pde_ <- new(cpp_pde_3d_fe1, D, pde_type - 1, pde_parameters)
+      if(L$f$FunctionSpace$mesh$domain_type == "surface") {
+        pde_ <- new(cpp_pde_surface_fe1, D, pde_type - 1, pde_parameters)
+      } else {
+        pde_ <- new(cpp_pde_3d_fe1, D, pde_type - 1, pde_parameters)
+      }
     }
   }
   if (fe_order == 2) { ## quadratic finite elements

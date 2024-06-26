@@ -25,7 +25,11 @@ functions_space <- function(domain, order, basis) {
     } else if(ncol(domain$nodes) == 2) {
       coeff <- 3
     } else if(ncol(domain$nodes) == 3) {
-       coeff <- 4
+      if(domain$domain_type == "surface") {
+        coeff <- 3
+      } else {
+        coeff <- 4
+      }
     }
     return(matrix(0, nrow = nrow(points) * coeff, ncol = 1)) ## ?? correct number of rows if order > 1
   }
